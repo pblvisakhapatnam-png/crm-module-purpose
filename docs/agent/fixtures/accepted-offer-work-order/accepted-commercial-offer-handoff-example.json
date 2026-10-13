@@ -1,0 +1,184 @@
+{
+  "fixture_metadata": {
+    "fixture_name": "accepted-commercial-offer-handoff-example",
+    "fixture_type": "contract_example_not_seed_data",
+    "safe_demo_data": true,
+    "contains_real_customer_data": false,
+    "contract_reference": "docs/agent/contracts/accepted-offer-to-work-order-handoff-contract.md",
+    "notes": [
+      "Logical handoff example only.",
+      "Does not need to match current database schema exactly.",
+      "Do not load as runtime seed data."
+    ]
+  },
+  "header": {
+    "commercial_offer_public_id": "DEMO-CO-PUBLIC-001",
+    "commercial_offer_number": "DEMO-CO-001",
+    "accepted_offer_reference": "DEMO-ACCEPTED-OFFER-REF-001",
+    "opportunity_public_id": "DEMO-OPP-001",
+    "account_public_id": "DEMO-ACCOUNT-001",
+    "account_display_name": "Demo Account Placeholder",
+    "pan": "PLACEHOLDER_NOT_REAL",
+    "offer_mode": "customer_format",
+    "acceptance_or_award_reference": "DEMO-AWARD-REF-001",
+    "accepted_date": "2026-07-01",
+    "submitted_document_references": [
+      {
+        "document_reference_id": "DEMO-DOC-SUBMITTED-001",
+        "document_type": "submitted_commercial_offer",
+        "version": "v1",
+        "status": "submitted",
+        "repository_id": "DEMO-REPO-DOC-001",
+        "safe_placeholder_url": "https://example.invalid/docs/DEMO-DOC-SUBMITTED-001"
+      }
+    ],
+    "accepted_document_references": [
+      {
+        "document_reference_id": "DEMO-DOC-ACCEPTED-001",
+        "document_type": "customer_award_reference",
+        "version": "v1",
+        "status": "accepted",
+        "repository_id": "DEMO-REPO-DOC-002",
+        "safe_placeholder_url": "https://example.invalid/docs/DEMO-DOC-ACCEPTED-001"
+      }
+    ],
+    "credit_decision_reference": {
+      "reference_id": "DEMO-CREDIT-REF-001",
+      "reference_type": "latest_available_commercial_offer_credit_exposure_reference",
+      "status": "recorded_for_release_readiness",
+      "does_not_replace_work_order_release_gate": true
+    },
+    "correlation_id": "DEMO-CORR-CO-WO-001",
+    "source_status_code": "ACCEPTED",
+    "source_event_references": [
+      "DEMO-EVENT-CO-SUBMITTED-001",
+      "DEMO-EVENT-CO-ACCEPTED-001"
+    ]
+  },
+  "lines": [
+    {
+      "commercial_offer_line_public_id": "DEMO-CO-LINE-001",
+      "line_sequence": 1,
+      "line_status": "AWARDED",
+      "scope_description": "Demo crane hiring for safe sample site work",
+      "equipment_category": "mobile_crane",
+      "equipment_model": "DEMO-MODEL-CRANE-50T",
+      "equipment_capacity": "50T",
+      "quantity": 1,
+      "billing_uom": "day",
+      "quoted_rate_amount": 25000.0,
+      "approved_rate_amount": 24500.0,
+      "currency_code": "INR",
+      "line_amount": 245000.0,
+      "expected_duration": {
+        "value": 10,
+        "uom": "day"
+      },
+      "site_or_location_details": {
+        "site_reference": "DEMO-SITE-001",
+        "display_text": "DEMO SITE PLACEHOLDER - NOT A REAL ADDRESS"
+      },
+      "gstn": "PLACEHOLDER_NOT_REAL",
+      "billing_party_details": {
+        "billing_party_reference": "DEMO-BILL-TO-001",
+        "display_text": "Demo Billing Party Placeholder"
+      },
+      "mobilisation_demobilisation_notes": "Demo mobilisation note only. No real route or site details.",
+      "document_references": [
+        "DEMO-DOC-LINE-001"
+      ],
+      "tc_references": [
+        "DEMO-TC-LINE-001"
+      ],
+      "pricing_evidence_reference": "DEMO-PRICE-EVIDENCE-001",
+      "remarks": "Safe demo line for full handoff example."
+    },
+    {
+      "commercial_offer_line_public_id": "DEMO-CO-LINE-002",
+      "line_sequence": 2,
+      "line_status": "AWARDED",
+      "scope_description": "Demo trailer support for equipment movement",
+      "equipment_category": "trailer",
+      "equipment_model": "DEMO-MODEL-TRAILER-40FT",
+      "equipment_capacity": "40FT",
+      "quantity": 1,
+      "billing_uom": "trip",
+      "quoted_rate_amount": 18000.0,
+      "approved_rate_amount": 18000.0,
+      "currency_code": "INR",
+      "line_amount": 36000.0,
+      "expected_duration": {
+        "value": 2,
+        "uom": "trip"
+      },
+      "site_or_location_details": {
+        "site_reference": "DEMO-SITE-001",
+        "display_text": "DEMO SITE PLACEHOLDER - NOT A REAL ADDRESS"
+      },
+      "gstn": "PLACEHOLDER_NOT_REAL",
+      "billing_party_details": {
+        "billing_party_reference": "DEMO-BILL-TO-001",
+        "display_text": "Demo Billing Party Placeholder"
+      },
+      "mobilisation_demobilisation_notes": "Demo movement note only. No real route or site details.",
+      "document_references": [
+        "DEMO-DOC-LINE-002"
+      ],
+      "tc_references": [
+        "DEMO-TC-LINE-002"
+      ],
+      "pricing_evidence_reference": "DEMO-PRICE-EVIDENCE-002",
+      "remarks": "Safe demo line for full handoff example."
+    }
+  ],
+  "documents": [
+    {
+      "document_reference_id": "DEMO-DOC-SUBMITTED-001",
+      "document_type": "submitted_commercial_offer",
+      "linked_record_type": "commercial_offer",
+      "linked_record_public_id": "DEMO-CO-PUBLIC-001",
+      "version": "v1",
+      "status": "submitted",
+      "lock_status": "locked_metadata_only",
+      "access_level": "demo_placeholder",
+      "repository_id": "DEMO-REPO-DOC-001",
+      "safe_placeholder_url": "https://example.invalid/docs/DEMO-DOC-SUBMITTED-001"
+    },
+    {
+      "document_reference_id": "DEMO-DOC-ACCEPTED-001",
+      "document_type": "customer_award_reference",
+      "linked_record_type": "commercial_offer",
+      "linked_record_public_id": "DEMO-CO-PUBLIC-001",
+      "version": "v1",
+      "status": "accepted",
+      "lock_status": "locked_metadata_only",
+      "access_level": "demo_placeholder",
+      "repository_id": "DEMO-REPO-DOC-002",
+      "safe_placeholder_url": "https://example.invalid/docs/DEMO-DOC-ACCEPTED-001"
+    }
+  ],
+  "source_events": [
+    {
+      "event_reference": "DEMO-EVENT-CO-SUBMITTED-001",
+      "event_name": "CommercialOfferSubmitted",
+      "record_type": "commercial_offer",
+      "record_public_id": "DEMO-CO-PUBLIC-001",
+      "event_time": "2026-06-30T10:00:00Z"
+    },
+    {
+      "event_reference": "DEMO-EVENT-CO-ACCEPTED-001",
+      "event_name": "CommercialOfferAccepted",
+      "record_type": "commercial_offer",
+      "record_public_id": "DEMO-CO-PUBLIC-001",
+      "event_time": "2026-07-01T10:00:00Z"
+    }
+  ],
+  "audit": {
+    "created_by_role": "SALES_MANAGER",
+    "handoff_requested_by_user_reference": "DEMO-USER-SALES-MANAGER-001",
+    "handoff_requested_at": "2026-07-01T10:15:00Z",
+    "correlation_id": "DEMO-CORR-CO-WO-001",
+    "no_secrets": true,
+    "no_real_data": true
+  }
+}

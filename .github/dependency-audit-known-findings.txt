@@ -1,0 +1,38 @@
+# Deferred Python dependency advisories - TE-2CI.1
+#
+# Each line names one specific advisory that the "Python dependency audit (gate)" step in
+# .github/workflows/te-2ci-validation.yml excludes. This is a per-advisory deferral list, not a
+# blanket exclusion: any advisory that is not named here fails the gate, and the preceding
+# full-report step always prints the complete audit including everything listed below.
+#
+# Every entry was present before TE-2CI.1 and none was introduced by it. They are recorded rather
+# than suppressed: see the "Dependency audit findings" section of
+# docs/agent/acceptance/te-2ci-github-actions-validation-foundation-acceptance.md for the
+# evidence behind each reachability note.
+#
+# Remediation owner: a separate dependency-upgrade work package. It is not TE-2CI.1 work, because
+# the starlette fixes require a major-version move that pulls FastAPI with it, and TE-2CI.1 must
+# not change application behaviour. Review this list in that package and on every TE-2C run.
+#
+# Format: <ADVISORY-ID>  # <package> <pinned> -> <fix> : <summary> | reachability
+#
+# Recorded: 14 August 2026, against backend/requirements.txt at commit 75fd4fc.
+#
+# Reconciled 8 October 2026 (TB-1 finding TB1-200, corrective package CS-15): the reachability notes of
+# PYSEC-2026-249 and PYSEC-2026-1941 said no route accepts a form or a file. That stopped being true with
+# Slice 9C's document upload (8 September 2026) and ERT-1's Plum report upload (26 September 2026); both
+# notes now say what is reached and what bounds it. The advisories stay deferred: their fix is the
+# FastAPI/Starlette upgrade, which TB-1 schedules before production. The note of PYSEC-2026-1845 said pytest is
+# never shipped; the backend image does ship it (TB-1 TB1-901), and the note now says so. The other six notes
+# were checked again on the same day and still hold.
+
+PYSEC-2026-2270  # python-dotenv 1.0.1 -> 1.2.2 : set_key()/unset_key() follow symlinks when rewriting a .env file | not reached - the application only reads configuration; it never calls set_key or unset_key
+PYSEC-2026-1845  # pytest 8.3.4 -> 9.0.3 : predictable /tmp/pytest-of-{user} directory, local DoS or privilege gain | not reached by the application - pytest is shipped, since the backend image installs backend/requirements.txt with the test tools in it (TB-1 TB1-901), but the application never runs it, and pytest is never run on a hosted server (the UAT runbook forbids it); it runs on developers' machines and on CI runners, which are ephemeral and single-tenant. Taking the test tools out of the runtime image is TB-1 CS-15, before production
+
+PYSEC-2026-161   # starlette 0.41.3 -> 1.0.1 : Host header is not validated when reconstructing request.url | not reached - no middleware or endpoint makes an authorization decision from request.url; authorization is role-based in the service layer
+PYSEC-2026-248   # starlette 0.41.3 -> 1.3.0 : a path without a leading slash moves the URL authority boundary | not reached - same reason as PYSEC-2026-161
+PYSEC-2026-249   # starlette 0.41.3 -> 1.3.1 : max_fields/max_part_size ignored for urlencoded bodies | reached - two routes take form fields, POST /api/documents/upload (Slice 9C) and POST /api/equipment-reference/imports (ERT-1), and FastAPI parses whichever form type the client declares, urlencoded included and with no field limit, before authentication runs; bounded only by each route's body cap, counted as the body arrives (MAX_DOCUMENTS_REQUEST_BYTES 26 MiB, MAX_EQUIPMENT_REQUEST_BYTES 5.25 MiB); fixed by the FastAPI/Starlette upgrade, before production (TB-1 TB1-200, CS-15)
+PYSEC-2026-1941  # starlette 0.41.3 -> 0.47.2 : large multipart upload blocks the event loop while spooling to disk | reached - the same two routes accept a file before authentication runs, and a file part over Starlette's 1 MiB spool size rolls over to disk on the event loop: a brief stall per large upload, which an unauthenticated caller can repeat; each request bounded by the same body caps (26 MiB, 5.25 MiB); fixed by the FastAPI/Starlette upgrade, before production (TB-1 TB1-200, CS-15)
+PYSEC-2026-1942  # starlette 0.41.3 -> 0.49.1 : quadratic Range header parsing in FileResponse | not reached - the backend serves no StaticFiles and returns no FileResponse
+PYSEC-2026-2280  # starlette 0.41.3 -> 1.1.0 : HTTPEndpoint dispatches non-standard methods through getattr | not reached - the backend registers no HTTPEndpoint class-based routes
+PYSEC-2026-2281  # starlette 0.41.3 -> 1.1.0 : StaticFiles UNC path SSRF on Windows | not reached - the backend serves no StaticFiles, and runs on Linux containers

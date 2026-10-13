@@ -1,0 +1,1456 @@
+:root {
+  --app-bg: #f5f7fa;
+  --app-surface: #ffffff;
+  --app-ink: #1f2933;
+  --app-muted: #5b6776;
+  --app-border: #d8e0e8;
+  --app-border-strong: #b8c4d1;
+  --app-primary: #0f766e;
+  --app-primary-strong: #115e59;
+  --app-accent: #b45309;
+  --app-danger: #b91c1c;
+  --app-success: #047857;
+  --app-warning: #92400e;
+  --app-sidebar: #1f2a27;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--app-bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--app-bg);
+  color: var(--app-ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: #0f5f99;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: #0b466f;
+}
+
+button,
+input,
+select,
+textarea {
+  border-radius: 6px;
+  font: inherit;
+}
+
+button {
+  min-height: 36px;
+  border: 1px solid var(--app-border-strong);
+  background: var(--app-surface);
+  color: var(--app-ink);
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--app-primary);
+  color: var(--app-primary-strong);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.button-link,
+.button-link-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.button-link {
+  border: 1px solid var(--app-primary);
+  background: var(--app-primary);
+  color: #ffffff;
+}
+
+.button-link:hover {
+  background: var(--app-primary-strong);
+  color: #ffffff;
+}
+
+.button-link-secondary {
+  border: 1px solid var(--app-border-strong);
+  background: var(--app-surface);
+  color: #0f5f99;
+}
+
+.button-link-secondary:hover {
+  border-color: var(--app-primary);
+  color: var(--app-primary-strong);
+}
+
+input,
+select,
+textarea {
+  border: 1px solid var(--app-border-strong);
+  background: var(--app-surface);
+  color: var(--app-ink);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(15, 118, 110, 0.2);
+  border-color: var(--app-primary);
+}
+
+table {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+}
+
+th {
+  background: #eef3f6;
+  color: #334155;
+  font-size: 13px;
+}
+
+tbody tr:hover {
+  background: #f8fafc;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  width: 282px;
+  flex: 0 0 282px;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 18px 20px;
+  background: var(--app-sidebar);
+  color: #f8fafc;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* The brand, with the menu's show/hide button beside it. */
+.app-sidebar-top {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.app-brand {
+  display: grid;
+  gap: 4px;
+}
+
+.app-menu-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  padding: 0;
+}
+
+.app-brand-name {
+  margin: 0;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.app-brand-subtitle {
+  margin: 0;
+  color: #c7d2cf;
+  font-size: 13px;
+}
+
+.app-nav {
+  display: grid;
+  gap: 4px;
+}
+
+.app-nav-title,
+.app-demo-flow-title,
+.session-label {
+  margin: 0 0 10px;
+  color: #c7d2cf;
+  font-size: 12px;
+}
+
+.app-nav-link,
+.app-flow-link,
+.session-link {
+  border-radius: 8px;
+  color: #eef6f5;
+  text-decoration: none;
+}
+
+.app-nav-link {
+  display: block;
+  padding: 6px 9px;
+}
+
+/* ELG-2: the count of certificate reminders not yet seen, beside Alerts in the menu, and on the Menu button while
+   the menu is hidden. */
+.app-nav-count {
+  display: inline-block;
+  min-width: 20px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--app-danger);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+
+.app-menu-count {
+  margin-left: 4px;
+}
+
+.app-shell--menu-hidden .app-menu-toggle:has(.app-menu-count) {
+  width: auto;
+  padding: 0 8px;
+}
+
+.app-nav-link:hover,
+.app-flow-link:hover,
+.session-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.app-demo-flow {
+  margin-top: 14px;
+  padding: 10px 9px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.app-demo-flow-list {
+  display: grid;
+  margin: 0;
+}
+
+.app-flow-step {
+  display: grid;
+  justify-items: start;
+}
+
+.app-flow-link {
+  display: block;
+  width: 100%;
+  padding: 5px 7px;
+  font-size: 13px;
+}
+
+.app-flow-step-arrow {
+  margin: -1px 0 -1px 8px;
+  color: #9fb3ad;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.app-main {
+  flex: 1;
+  max-width: calc(100vw - 282px);
+  padding: 32px 36px;
+}
+
+.app-main > section {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.app-main > section > h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.app-main > section > h2 + p {
+  max-width: 920px;
+  margin-top: 10px;
+  color: var(--app-muted);
+  line-height: 1.55;
+}
+
+.app-main h3 {
+  color: #1f2933;
+}
+
+.page-actions,
+.pagination-row,
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.page-actions {
+  margin-top: 16px;
+}
+
+.pagination-row {
+  margin-top: 18px;
+}
+
+.content-card,
+.form-card,
+.list-card,
+.record-card {
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: var(--app-surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.content-card,
+.list-card {
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.form-card {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+/* A form of a few short fields, such as signing in. */
+.form-card-narrow {
+  max-width: 360px;
+}
+
+/* A message inside a .form-card: the card's own gap spaces it from the button above. */
+.form-card > .action-feedback {
+  margin: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.form-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.field-stack {
+  display: grid;
+  gap: 4px;
+  /* A field keeps its own height at the top of its row: when a neighbour is taller - a hint under its box - the
+     other boxes in the row neither stretch nor drop (owner's screen check, ERT-2). */
+  align-content: start;
+}
+
+.field-stack input,
+.field-stack select,
+.field-stack textarea,
+.form-card input,
+.form-card select,
+.form-card textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 8px;
+}
+
+.action-feedback {
+  margin-top: 8px;
+}
+
+.data-table-wrap {
+  width: 100%;
+  margin-top: 24px;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* HOL-1: the states a holiday applies to - tick boxes in columns, inside a disclosure in the holiday's row. */
+.state-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 4px 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.data-table-wide {
+  min-width: 980px;
+}
+
+/* Every data table's cells, padded, aligned and ruled here once rather than on each cell. */
+.data-table th,
+.data-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--app-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+/* A row opened beneath a table row, to work on it. */
+.data-table tr.row-editor > td {
+  background: var(--app-bg);
+}
+
+/* Words that report an outcome or a problem, in the theme's colours. */
+.text-danger {
+  color: var(--app-danger);
+}
+
+.text-success {
+  color: var(--app-success);
+}
+
+.text-warning {
+  color: var(--app-warning);
+}
+
+/* A long value with no spaces, such as a file name, broken to fit rather than widening its column. */
+.text-break-anywhere {
+  overflow-wrap: anywhere;
+}
+
+/* A table cell of short words and buttons - a copy's "Attached" and "Copies", a row's "Withdraw". A card lets
+   words break anywhere (.section-card), which lets a table squeeze such a column until its words split; these
+   stay whole, on one line, so the row's buttons stand level. */
+.data-table td.cell-actions {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+/* A table column showing a record's state, its dates and a button - a rule's "In effect", "from ..." and
+   "End this rule": wide enough that each stays on one line, so the row stays short (owner, 28 September 2026). */
+.data-table th.col-state-actions {
+  width: 13rem;
+}
+
+/* A table column of long reference text - a rule's source: held to a set width beside .col-state-actions, so the
+   columns of short values keep theirs and the text wraps within it. */
+.data-table th.col-long-text {
+  width: 14rem;
+}
+
+/* Text typed on several lines, shown on several lines. */
+.text-pre-wrap {
+  white-space: pre-wrap;
+}
+
+/* A form's buttons as one cell of a .form-grid row: a blank first line where the fields carry their
+   labels, so the buttons stand level with the boxes beside them, and a message wrapping beneath them as a
+   hint sits beneath its box. */
+.form-grid:has(> .form-actions) {
+  /* Cells keep to the top of the row, so a message beneath the buttons never pushes the boxes down. */
+  align-items: start;
+}
+
+.form-grid > .form-actions {
+  row-gap: 4px;
+}
+
+.form-grid > .form-actions::before {
+  content: "\00a0";
+  flex-basis: 100%;
+}
+
+.form-grid > .form-actions > p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+/* A row mixing labelled fields and buttons: the buttons stand level with the boxes, not the labels. */
+.page-actions.actions-with-fields {
+  align-items: flex-end;
+}
+
+/* A form opened inside a section, below what the section shows. */
+.section-form {
+  margin-top: 12px;
+}
+
+/* A short list inside a table cell or beside other words. */
+.compact-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* Tick boxes to choose several from, one to a line - a kit model's crane models, say. */
+.choice-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* One of a run of items separated by a rule. */
+.divided-item {
+  border-top: 1px solid var(--app-border);
+  padding: 8px 0;
+}
+
+/* A record's facts, label beside value. */
+.facts-list {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.facts-list dt {
+  color: var(--app-muted);
+  font-weight: 700;
+}
+
+.facts-list dd {
+  margin: 0;
+}
+
+.record-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.record-card {
+  padding: 16px;
+}
+
+.record-card h3,
+.demo-boundary-card h3,
+.list-card h3,
+.content-card h3 {
+  margin-top: 0;
+}
+
+.demo-boundary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.demo-boundary-card {
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: var(--app-surface);
+}
+
+.app-main section[style*="border: 1px solid #ddd"],
+.app-main div[style*="border: 1px solid #ddd"],
+.app-main article[style*="border: 1px solid #ddd"] {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+/* Messages on pages that still colour them inline, matched by that inline colour. A page moved onto the
+   .text-* classes above no longer matches, and shows its messages as the Equipment pages do. These rules
+   go when the last such page has moved. */
+.app-main p[style*="crimson"] {
+  display: inline-block;
+  padding: 8px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff1f2;
+}
+
+.app-main p[style*="#065f46"],
+.app-main p[style*="green"] {
+  display: inline-block;
+  padding: 8px 10px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: #f0fdf4;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid #b7d8d4;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: var(--app-primary-strong);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.empty-state {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px dashed var(--app-border-strong);
+  border-radius: 8px;
+  background: #fbfdff;
+  color: var(--app-muted);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.dashboard-card {
+  display: grid;
+  gap: 12px;
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 180px;
+  padding: 18px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: var(--app-surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.dashboard-card h3 {
+  margin: 0;
+}
+
+.dashboard-card p {
+  margin: 0;
+  color: var(--app-muted);
+  line-height: 1.45;
+}
+
+.dashboard-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin-top: auto;
+  align-self: end;
+}
+
+.dashboard-action,
+.dashboard-action-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dashboard-action {
+  border: 1px solid var(--app-primary);
+  background: var(--app-primary);
+  color: #ffffff;
+}
+
+.dashboard-action:hover {
+  background: var(--app-primary-strong);
+  color: #ffffff;
+}
+
+.dashboard-action-secondary {
+  border: 1px solid var(--app-border-strong);
+  color: #0f5f99;
+}
+
+.dashboard-demo-note {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid #f1c27d;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #7c2d12;
+  line-height: 1.5;
+}
+
+.opportunity-context-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.opportunity-context-card,
+.opportunity-account-repair,
+.opportunity-account-repair form,
+.opportunity-account-repair label {
+  min-width: 0;
+}
+
+.opportunity-account-warning,
+.opportunity-context-card p,
+.opportunity-context-card dd,
+.opportunity-account-repair span {
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+.opportunity-account-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.opportunity-account-repair input,
+.opportunity-account-repair select,
+.opportunity-account-repair textarea {
+  width: 100%;
+  max-width: 100%;
+}
+
+.opportunity-context-list {
+  grid-template-columns: minmax(120px, 160px) minmax(0, 1fr);
+}
+
+.helper-text {
+  color: var(--app-muted);
+}
+
+.session-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.session-status {
+  color: #d7e2df;
+  font-size: 14px;
+}
+
+.session-status strong {
+  color: #ffffff;
+}
+
+.session-role {
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.session-button {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+/* Buttons on the dark menu panel. Once the menu is hidden, its toggle stands on the page's own
+   background and keeps the ordinary button look. */
+.session-button,
+.app-shell:not(.app-shell--menu-hidden) .app-menu-toggle {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: transparent;
+  color: #ffffff;
+}
+
+.session-button:hover:not(:disabled),
+.app-shell:not(.app-shell--menu-hidden) .app-menu-toggle:hover:not(:disabled) {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+/* The menu hidden (the project owner, 26 September 2026): only its toggle is left, at the top left, and
+   the page takes the rest of the width. At 900px and below the toggle is a row of its own above the page. */
+.app-shell--menu-hidden .app-sidebar {
+  width: auto;
+  flex-basis: auto;
+  padding: 12px;
+  border-right: 0;
+  background: transparent;
+}
+
+.app-shell--menu-hidden .app-sidebar-top {
+  margin-bottom: 0;
+}
+
+.app-shell--menu-hidden .app-brand,
+.app-shell--menu-hidden .app-menu {
+  display: none;
+}
+
+.app-shell--menu-hidden .app-main {
+  min-width: 0;
+  max-width: none;
+}
+
+@media (max-width: 1100px) {
+  .opportunity-context-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    display: block;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    min-height: auto;
+    max-height: none;
+  }
+
+  .app-nav {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .app-main {
+    max-width: none;
+    padding: 24px 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .opportunity-context-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* CRM Operational Reporting Foundation: dashboard KPI tiles. */
+.report-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.report-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid #d9dee5;
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.report-kpi-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #5b6673;
+}
+
+.report-kpi-value {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  color: #1f2937;
+}
+
+.report-kpi-hint {
+  font-size: 0.85rem;
+  color: #5b6673;
+}
+
+/* Shared page layout (UI cleanup, September 2026): see components/PageLayout.tsx. */
+.page-header {
+  padding: 18px 20px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  background: var(--app-surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.page-header-back {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.page-header-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.page-header-titles {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.page-header-eyebrow {
+  margin: 0 0 4px;
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.page-header-title {
+  margin: 0;
+  color: #111827;
+  font-size: 24px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.page-header-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.page-header-subtitle {
+  max-width: 860px;
+  margin: 10px 0 0;
+  color: var(--app-muted);
+  line-height: 1.5;
+}
+
+.page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.page-header-notes {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.page-header-notes > p {
+  margin: 0;
+}
+
+.detail-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 20px;
+  overflow-x: auto;
+  border-bottom: 2px solid var(--app-border);
+}
+
+.detail-tab {
+  min-height: 40px;
+  margin-bottom: -2px;
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: #4b5563;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.detail-tab:hover:not(:disabled) {
+  border-color: transparent;
+  border-bottom-color: var(--app-border-strong);
+  background: #eef3f6;
+  color: #1f2933;
+}
+
+.detail-tab[aria-selected="true"],
+.detail-tab[aria-selected="true"]:hover:not(:disabled) {
+  border-color: var(--app-border);
+  border-bottom: 3px solid var(--app-primary);
+  background: var(--app-surface);
+  color: var(--app-primary-strong);
+  font-weight: 700;
+}
+
+.section-index {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  background: rgba(245, 247, 250, 0.96);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+.section-index-label {
+  margin-right: 4px;
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.section-index-top {
+  /* Pushed to the far end of the sticky row, so it never sits among the section links. */
+  margin-left: auto;
+}
+
+.section-index a {
+  padding: 5px 11px;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 999px;
+  background: var(--app-surface);
+  color: #0f5f99;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.section-index a:hover {
+  border-color: var(--app-primary);
+  color: var(--app-primary-strong);
+}
+
+/* Tones shared by groups and stand-alone cards. */
+.section-group--teal,
+.section-card--teal {
+  --group-accent: var(--app-primary);
+  --group-tint: #ecfdf8;
+}
+
+.section-group--blue,
+.section-card--blue {
+  --group-accent: #1d4ed8;
+  --group-tint: #eff6ff;
+}
+
+.section-group--amber,
+.section-card--amber {
+  --group-accent: #b45309;
+  --group-tint: #fffbeb;
+}
+
+.section-group--violet,
+.section-card--violet {
+  --group-accent: #6d28d9;
+  --group-tint: #f5f3ff;
+}
+
+.section-group--slate,
+.section-card--slate {
+  --group-accent: #475569;
+  --group-tint: #f1f5f9;
+}
+
+.section-group {
+  margin-top: 28px;
+  scroll-margin-top: 84px;
+}
+
+.section-group-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: baseline;
+  padding: 10px 14px;
+  border-left: 5px solid var(--group-accent);
+  border-radius: 8px;
+  background: var(--group-tint);
+}
+
+.section-group-title {
+  margin: 0;
+  color: #111827;
+  font-size: 17px;
+}
+
+.section-group-description {
+  margin: 0;
+  color: var(--app-muted);
+  font-size: 14px;
+}
+
+.section-group-body {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+  padding-left: 14px;
+  border-left: 3px solid var(--group-tint);
+}
+
+.section-card {
+  min-width: 0;
+  margin-top: 14px;
+  border: 1px solid var(--app-border);
+  border-top: 3px solid var(--group-accent, var(--app-border-strong));
+  border-radius: 8px;
+  background: var(--app-surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  overflow-wrap: anywhere;
+  scroll-margin-top: 84px;
+}
+
+.section-group-body > .section-card {
+  margin-top: 0;
+}
+
+.section-card-title {
+  margin: 0;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--app-border);
+  border-radius: 6px 6px 0 0;
+  background: #f8fafc;
+  color: #1f2933;
+  font-size: 15px;
+}
+
+.section-card-body {
+  padding: 14px 16px;
+}
+
+.section-card-body > :first-child {
+  margin-top: 0;
+}
+
+.section-card-body > :last-child {
+  margin-bottom: 0;
+}
+
+.section-card--soft .section-card-body {
+  background: #fcfdfe;
+}
+
+.status-badge--neutral {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.status-badge--info {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.status-badge--success {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.status-badge--warning {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.status-badge--danger {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.status-badge--muted {
+  border-color: #d1d5db;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.reference-text {
+  color: var(--app-muted);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* A secondary way of doing something, kept closed until the user asks for it. */
+.secondary-disclosure {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--app-border);
+}
+
+/* A line's market rates on a Commercial Offer (Slice 4G): a Jump to target, so it stops below the sticky row as the
+   section cards do. */
+.line-market-rates {
+  scroll-margin-top: 84px;
+}
+
+.secondary-disclosure > summary {
+  cursor: pointer;
+  color: var(--app-muted);
+  font-weight: 600;
+}
+
+/* Work Order billing terms (Slice 7D.1). Each group of terms is its own card inside one of three
+   chapters, coloured with the shared tones above, so one group is told apart from the next at a glance
+   and the fields of a group sit side by side instead of one per row. */
+/* A period opens and closes, so a line with several dated periods does not stack every form. */
+.terms-period {
+  margin-top: 14px;
+}
+
+.terms-period-body {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.terms-period-band::-webkit-details-marker {
+  display: none;
+}
+
+.terms-period-title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.terms-period-chevron {
+  display: inline-block;
+  color: var(--app-muted);
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+
+.terms-period[open] > .terms-period-band .terms-period-chevron {
+  transform: rotate(90deg);
+}
+
+.terms-period-meta {
+  color: var(--app-muted);
+  font-weight: 400;
+}
+
+.terms-period-band {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: #f8fafc;
+  font-weight: 700;
+}
+
+.terms-form {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  max-width: 900px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.terms-chapter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-top: 8px;
+  padding: 2px 0 2px 10px;
+  border-left: 4px solid var(--group-accent);
+}
+
+.terms-chapter-title {
+  margin: 0;
+  color: #111827;
+  font-size: 16px;
+}
+
+.terms-chapter-description {
+  margin: 0;
+  color: var(--app-muted);
+  font-size: 13px;
+}
+
+.terms-group {
+  min-width: 0;
+  border: 1px solid var(--app-border);
+  border-top: 3px solid var(--group-accent);
+  border-radius: 8px;
+  background: var(--app-surface);
+}
+
+.terms-group-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--app-border);
+  border-radius: 5px 5px 0 0;
+  background: var(--group-tint);
+}
+
+.terms-group-title {
+  margin: 0;
+  color: #111827;
+  font-size: 15px;
+}
+
+.terms-group-description {
+  margin: 2px 0 0;
+  color: var(--app-muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* auto-fill keeps every card's columns the same width, so a card with one field does not stretch it. */
+.terms-group-body,
+.terms-subgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  gap: 12px 18px;
+  align-items: start;
+}
+
+.terms-group-body {
+  padding: 12px 14px;
+}
+
+/* Two related sets inside one card, such as mobilisation then demobilisation: each on its own rows. */
+.terms-subgrid + .terms-subgrid {
+  padding-top: 12px;
+  border-top: 1px dashed var(--app-border);
+}
+
+/* A checkbox row, a note or the weekday picker: across the whole card rather than in one column. */
+.terms-wide {
+  grid-column: 1 / -1;
+}
+
+.terms-action-bar {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.terms-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.terms-action-row p {
+  margin: 0;
+}
+
+/* Adding a later period is a separate action, so it sits apart from the form above it. */
+.terms-secondary-box {
+  display: grid;
+  gap: 8px;
+  max-width: 520px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px dashed var(--app-border-strong);
+  border-radius: 8px;
+  background: #fbfdff;
+}
+
+.terms-readonly-list {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) 1fr;
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.terms-readonly-list dt {
+  color: var(--app-muted);
+  font-weight: 700;
+}
+
+.terms-readonly-list dd {
+  margin: 0;
+}
+
+/* A page's sections, one below another, at the width detail pages keep (8A core's allocation pages). */
+.page-sections {
+  display: grid;
+  gap: 16px;
+  max-width: 1120px;
+  margin-top: 24px;
+}
+
+/* A tick box with the words it confirms beside it - "I have seen these warnings". */
+.tick-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 10px 0;
+}
+
+.tick-row input {
+  margin-top: 3px;
+}
+
+/* A small count typed in a table cell, its unit beside it: up to three digits (8A's counterweight blocks). */
+.count-field {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.count-field input {
+  width: 4.5em;
+  padding: 4px 6px;
+}
+
+/* Slice 7D Part 5: the crew's food, accommodation and travel. Each item's heading spans the card, and its
+   operators' and helpers' answers sit side by side beneath it, each a short stack of fields. */
+.terms-upkeep-item {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-weight: 700;
+}
+
+.terms-upkeep-cell {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}

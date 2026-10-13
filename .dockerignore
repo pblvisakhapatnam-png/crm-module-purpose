@@ -1,0 +1,13 @@
+﻿.git
+.gitignore
+.env
+.env.local
+node_modules
+.venv
+__pycache__
+.pytest_cache
+.next
+dist
+build
+docker-data
+*.log

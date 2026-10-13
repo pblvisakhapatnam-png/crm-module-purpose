@@ -1,0 +1,112 @@
+{
+  "fixture_name": "tc-selection-example-commercial-offer",
+  "fixture_type": "reference_example_only",
+  "description": "Example of header-level and line-level T&C selection for a demo Commercial Offer. This is not seed data and not a runtime contract.",
+  "commercial_offer": {
+    "offer_public_id": "CO-DEMO-TC-0001",
+    "offer_number": "DEMO-CO-TC-0001",
+    "offer_mode": "PLUM_GENERATED",
+    "business_line": "Equipment Hiring",
+    "account_public_id": "ACC-DEMO-0001",
+    "opportunity_public_id": "OPP-DEMO-0001",
+    "status": "DRAFT"
+  },
+  "header_clause_selections": [
+    {
+      "selection_id": "TCSEL-DEMO-H-001",
+      "clause_id": "TC-DEMO-HIRE-001",
+      "selected_text": "Equipment hire charges apply as agreed for the equipment and billing basis stated in the Commercial Offer.",
+      "is_modified_from_master": false,
+      "is_omitted": false,
+      "approval_required": false,
+      "approval_reason": null,
+      "source_reference": "docs/agent/fixtures/terms-and-conditions/tc-clause-library-demo.json"
+    },
+    {
+      "selection_id": "TCSEL-DEMO-H-002",
+      "clause_id": "TC-DEMO-HIRE-002",
+      "selected_text": "Mobilization and demobilization charges apply as agreed. Customer-scope and PBL-scope items must be stated clearly in the Commercial Offer.",
+      "is_modified_from_master": false,
+      "is_omitted": false,
+      "approval_required": false,
+      "approval_reason": null,
+      "source_reference": "docs/agent/fixtures/terms-and-conditions/tc-clause-library-demo.json"
+    },
+    {
+      "selection_id": "TCSEL-DEMO-H-003",
+      "clause_id": "TC-DEMO-HIRE-007",
+      "selected_text": "Advance payment is not required for this demo offer.",
+      "is_modified_from_master": true,
+      "is_omitted": false,
+      "approval_required": true,
+      "approval_reason": "Standard advance-payment clause was changed for the demo scenario.",
+      "source_reference": "docs/agent/fixtures/terms-and-conditions/tc-clause-library-demo.json"
+    }
+  ],
+  "line_clause_selections": [
+    {
+      "offer_line_public_id": "COL-DEMO-TC-0001",
+      "line_sequence": 1,
+      "equipment_or_service": "100 MT crawler crane",
+      "selected_clauses": [
+        {
+          "selection_id": "TCSEL-DEMO-L1-001",
+          "clause_id": "TC-DEMO-HIRE-003",
+          "selected_text": "Normal working days, shift hours, excluded holidays and lunch breaks must be stated in the Commercial Offer. Breakdown deductions are calculated on the agreed pro-rata basis.",
+          "is_modified_from_master": false,
+          "is_omitted": false,
+          "approval_required": false,
+          "approval_reason": null
+        },
+        {
+          "selection_id": "TCSEL-DEMO-L1-002",
+          "clause_id": "TC-DEMO-HIRE-004",
+          "selected_text": "Overtime beyond stipulated working hours is chargeable at the agreed hourly rate and must remain traceable to the Work Order line and log sheet.",
+          "is_modified_from_master": false,
+          "is_omitted": false,
+          "approval_required": false,
+          "approval_reason": null
+        },
+        {
+          "selection_id": "TCSEL-DEMO-L1-003",
+          "clause_id": "TC-DEMO-HIRE-006",
+          "selected_text": "Fuel supply basis, agreed consumption rates and excess-consumption debit note treatment must be stated in the Commercial Offer.",
+          "is_modified_from_master": false,
+          "is_omitted": false,
+          "approval_required": false,
+          "approval_reason": null
+        }
+      ]
+    },
+    {
+      "offer_line_public_id": "COL-DEMO-TC-0002",
+      "line_sequence": 2,
+      "equipment_or_service": "Operator support",
+      "selected_clauses": [
+        {
+          "selection_id": "TCSEL-DEMO-L2-001",
+          "clause_id": "TC-DEMO-HIRE-005",
+          "selected_text": "Crew food and accommodation responsibility must be stated in the Commercial Offer.",
+          "is_modified_from_master": false,
+          "is_omitted": false,
+          "approval_required": false,
+          "approval_reason": null
+        }
+      ]
+    }
+  ],
+  "future_audit_expectation": {
+    "events_to_record": [
+      "commercial_offer_tc_clause_selected",
+      "commercial_offer_tc_clause_modified",
+      "commercial_offer_tc_deviation_approval_requested"
+    ],
+    "identity_to_preserve": [
+      "offer_public_id",
+      "offer_line_public_id",
+      "clause_id",
+      "selection_id"
+    ]
+  }
+}
+

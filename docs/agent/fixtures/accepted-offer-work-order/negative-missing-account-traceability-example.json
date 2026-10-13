@@ -1,0 +1,35 @@
+{
+  "fixture_metadata": {
+    "fixture_name": "negative-missing-account-traceability-example",
+    "fixture_type": "contract_example_not_seed_data",
+    "safe_demo_data": true,
+    "contains_real_customer_data": false,
+    "purpose": "Show invalid handoff request where Account traceability is missing."
+  },
+  "invalid_handoff_request": {
+    "commercial_offer_public_id": "DEMO-CO-PUBLIC-NEG-001",
+    "commercial_offer_number": "DEMO-CO-NEG-001",
+    "accepted_offer_reference": "DEMO-ACCEPTED-OFFER-NEG-001",
+    "opportunity_public_id": "DEMO-OPP-NEG-001",
+    "account_public_id": null,
+    "account_display_name": null,
+    "source_status_code": "ACCEPTED",
+    "selected_line_public_ids": [
+      "DEMO-CO-NEG-LINE-001"
+    ],
+    "correlation_id": "DEMO-CORR-NEG-MISSING-ACCOUNT"
+  },
+  "expected_rejection": {
+    "should_reject": true,
+    "suggested_status_code": 422,
+    "error_meaning": "Account traceability is required before Work Order handoff.",
+    "user_facing_term": "Account",
+    "work_order_created": false,
+    "partial_success_allowed": false
+  },
+  "expected_business_event_or_audit_behavior": {
+    "success_business_event_created": false,
+    "reason": "No valid state change and no Work Order shell is created.",
+    "technical_or_security_audit_may_record_rejected_attempt": true
+  }
+}

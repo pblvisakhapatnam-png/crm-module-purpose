@@ -1,0 +1,82 @@
+{
+  "fixture_metadata": {
+    "fixture_name": "partial-award-selected-lines-example",
+    "fixture_type": "contract_example_not_seed_data",
+    "safe_demo_data": true,
+    "contains_real_customer_data": false,
+    "purpose": "Show one accepted Commercial Offer creating one Work Order shell from selected lines only."
+  },
+  "accepted_commercial_offer": {
+    "commercial_offer_public_id": "DEMO-CO-PUBLIC-002",
+    "commercial_offer_number": "DEMO-CO-002",
+    "accepted_offer_reference": "DEMO-ACCEPTED-OFFER-REF-002",
+    "opportunity_public_id": "DEMO-OPP-002",
+    "account_public_id": "DEMO-ACCOUNT-002",
+    "account_display_name": "Demo Account Placeholder Two",
+    "source_status_code": "ACCEPTED",
+    "correlation_id": "DEMO-CORR-CO-WO-002"
+  },
+  "selected_line_public_ids": [
+    "DEMO-CO2-LINE-001",
+    "DEMO-CO2-LINE-003"
+  ],
+  "available_offer_lines": [
+    {
+      "commercial_offer_line_public_id": "DEMO-CO2-LINE-001",
+      "line_sequence": 1,
+      "line_status": "AWARDED",
+      "scope_description": "Demo excavator line selected for handoff"
+    },
+    {
+      "commercial_offer_line_public_id": "DEMO-CO2-LINE-002",
+      "line_sequence": 2,
+      "line_status": "NOT_AWARDED",
+      "scope_description": "Demo loader line excluded from handoff"
+    },
+    {
+      "commercial_offer_line_public_id": "DEMO-CO2-LINE-003",
+      "line_sequence": 3,
+      "line_status": "AWARDED",
+      "scope_description": "Demo operator support line selected for handoff"
+    }
+  ],
+  "excluded_lines": [
+    {
+      "commercial_offer_line_public_id": "DEMO-CO2-LINE-002",
+      "line_sequence": 2,
+      "reason": "not_awarded"
+    }
+  ],
+  "work_order_shell": {
+    "work_order_public_id": "DEMO-WO-PUBLIC-002",
+    "work_order_number": "DEMO-WO-002",
+    "linked_commercial_offer_public_id": "DEMO-CO-PUBLIC-002",
+    "accepted_offer_reference": "DEMO-ACCEPTED-OFFER-REF-002",
+    "linked_opportunity_public_id": "DEMO-OPP-002",
+    "linked_account_public_id": "DEMO-ACCOUNT-002",
+    "work_order_status": "HANDOFF_RECEIVED",
+    "business_event_reference": "DEMO-EVENT-WO-SHELL-002",
+    "work_order_lines": [
+      {
+        "work_order_line_public_id": "DEMO-WO2-LINE-001",
+        "line_sequence": 1,
+        "source_commercial_offer_line_public_id": "DEMO-CO2-LINE-001",
+        "line_status": "HANDOFF_RECEIVED",
+        "scope_description": "Demo excavator line selected for handoff"
+      },
+      {
+        "work_order_line_public_id": "DEMO-WO2-LINE-002",
+        "line_sequence": 2,
+        "source_commercial_offer_line_public_id": "DEMO-CO2-LINE-003",
+        "line_status": "HANDOFF_RECEIVED",
+        "scope_description": "Demo operator support line selected for handoff"
+      }
+    ]
+  },
+  "validation_expectation": {
+    "work_order_lines_created_only_for_selected_lines": true,
+    "excluded_line_created_work_order_line": false,
+    "source_commercial_offer_line_public_id_retained": true,
+    "no_release_posting_execution_or_billing": true
+  }
+}

@@ -1,0 +1,600 @@
+# TE-2CI Validation
+#
+# Repository-side validation foundation required by ADR-021 (GitHub Actions as the CI/CD
+# platform). It reproduces the documented local validation path -- backend regression against
+# PostgreSQL, an empty-database migration, the frontend gate, contract fixtures, basic security
+# checks, and the Docker Compose plus Playwright end-to-end path -- and collapses the result into
+# one stable required check.
+#
+# Branch protection and rulesets match on the ordinary job name, so the required status check is
+# exactly:
+#
+#     Required validation
+#
+# The workflow's display name, "TE-2CI Validation", is not part of that identifier.
+#
+# Two consequences to keep in mind when editing this file:
+#
+#   * Renaming or removing the aggregate job does not bypass protection. The expected check simply
+#     stops being reported, so pull requests block on a missing check until the protection rule is
+#     updated to match the new name.
+#   * A job name used as a required check must be unique across all workflows in the repository.
+#     Protection matches on the name alone, so a second job called "Required validation" in any
+#     other workflow would be indistinguishable from this one.
+#
+# This workflow validates. It does not deploy: there is no environment, no production secret and
+# no deployment step anywhere in it. Deployment automation, environment approval and rollback
+# evidence are separate future work recorded in
+# docs/agent/technical-enablement/TE_2CI_GITHUB_ACTIONS_VALIDATION_FOUNDATION.md.
+#
+# Credentials: every value used here is fictional and created inside the ephemeral runner. The
+# local .env is never read, never uploaded and never referenced. Nothing in this file is, or may
+# become, a production credential.
+
+name: TE-2CI Validation
+
+# No run on a push to main. The ruleset merges a pull request only when its branch is current with
+# main and this check succeeded on that exact commit, so the merge commit's tree is the tree the pull
+# request's run already proved. workflow_dispatch runs it on main when wanted.
+on:
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: every job only reads the repository. No job writes contents, packages,
+# deployments, issues or pull requests. A future job that genuinely needs more must raise it at
+# the job level, never here.
+permissions:
+  contents: read
+
+# One in-flight validation per ref. A superseded push is cancelled rather than left to compete
+# for runners with the commit that replaced it.
+concurrency:
+  group: te-2ci-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-regression:
+    name: Backend regression
+    runs-on: ubuntu-latest
+    # Raised from 30 on 3 October 2026: the suite grew from 21 to 29.5 minutes over 2 October, and
+    # after HOL-1 it was cancelled at 98% at the 30-minute limit (runs 37113317250 on main and
+    # 37129116367 on PR #86) with no test failing.
+    timeout-minutes: 45
+
+    services:
+      # Matches the ADR-028 production baseline (PostgreSQL 17) and the docker-compose.yml image,
+      # so the suite runs against the same major version locally and in CI.
+      #
+      # These credentials are fictional and exist only for the life of this runner. They are
+      # written literally rather than through the `env` context because GitHub does not expose
+      # that context to `services`.
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pbl_crm_hiring_ci
+          POSTGRES_USER: pbl_ci
+          POSTGRES_PASSWORD: ci-not-a-real-secret-placeholder
+          TZ: UTC
+          PGTZ: UTC
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pbl_ci -d pbl_crm_hiring_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      # Named explicitly: the backend refuses to start without it (TB-1 TB1-204 part d).
+      APP_ENV: ci
+      # Fewer hashing rounds than production's 600,000: the suite signs in so often that 600,000 took this job past
+      # its time limit. Only development and CI may set fewer (backend/app/core/config.py).
+      PASSWORD_HASH_ITERATIONS: "10000"
+      DATABASE_URL: postgresql+psycopg://pbl_ci:ci-not-a-real-secret-placeholder@localhost:5432/pbl_crm_hiring_ci
+      # Slice 9C document storage. This job runs pytest directly on the runner, not inside the
+      # backend container, so the setting's default (`/app/document-store`, which matches the
+      # Compose volume mount) does not exist and `/app` is not writable here. The storage root
+      # is configurable precisely so each environment can point it somewhere valid - the same
+      # reason DATABASE_URL is set above.
+      #
+      # A literal path rather than `${{ runner.temp }}`: the `runner` context is not available
+      # in a job-level `env:` block (actionlint: "context 'runner' is not allowed here"), and a
+      # workflow referencing it there is rejected at parse time before any job starts. Outside
+      # the workspace either way, so uploaded test files can never appear in `git status` or in
+      # the proposed-tree enumeration the secret and contract-fixture validators walk.
+      DOCUMENT_STORAGE_ROOT: /tmp/pbl-crm-document-store
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Do not leave the job's token in .git/config. Nothing here pushes, fetches another
+          # repository or calls the API, so a persisted credential would only widen what a
+          # compromised step could reach.
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate an ephemeral JWT secret for this run
+        run: |
+          # Created in the runner and discarded with it. No signing key is ever committed.
+          # Masked with ::add-mask:: before it is exported, so the generated value does not
+          # appear in this or any later step's logged environment output.
+          jwt_secret=$(openssl rand -hex 32)
+          echo "::add-mask::${jwt_secret}"
+          echo "JWT_SECRET=${jwt_secret}" >> "$GITHUB_ENV"
+          unset jwt_secret
+
+      - name: Apply migrations
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Seed the demo users the tests sign in as
+        # The migrations no longer create them (TB-1 TB1-203). In the Compose job the backend does
+        # this itself when it starts; this job runs pytest on the runner, so it is a step here.
+        working-directory: backend
+        run: python -m tooling.user_admin seed-demo-users
+
+      - name: Run the backend regression suite
+        working-directory: backend
+        run: pytest
+
+  migrations:
+    name: Empty-database migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pbl_crm_hiring_migration_ci
+          POSTGRES_USER: pbl_ci
+          POSTGRES_PASSWORD: ci-not-a-real-secret-placeholder
+          TZ: UTC
+          PGTZ: UTC
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pbl_ci -d pbl_crm_hiring_migration_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      # Named explicitly: the backend's settings, which Alembic reads, refuse to load without it
+      # (TB-1 TB1-204 part d).
+      APP_ENV: ci
+      DATABASE_URL: postgresql+psycopg://pbl_ci:ci-not-a-real-secret-placeholder@localhost:5432/pbl_crm_hiring_migration_ci
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Do not leave the job's token in .git/config. Nothing here pushes, fetches another
+          # repository or calls the API, so a persisted credential would only widen what a
+          # compromised step could reach.
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Confirm the database is empty before upgrading
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          # PostgreSQL applies DDL transactionally, so a clean upgrade from genuinely empty is the
+          # meaningful check (TESTING_STRATEGY.md section 6). Asserting emptiness first stops a
+          # reused or pre-seeded database from making the upgrade look successful.
+          python - <<'PY'
+          from sqlalchemy import create_engine, text
+          from app.core.database import CONNECT_ARGS, build_sqlalchemy_url
+
+          engine = create_engine(build_sqlalchemy_url(), connect_args=CONNECT_ARGS)
+          with engine.connect() as connection:
+              count = connection.execute(
+                  text("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public'")
+              ).scalar_one()
+          if count != 0:
+              raise SystemExit(f"Expected an empty public schema, found {count} table(s).")
+          print("Confirmed: 0 tables in the public schema before upgrade.")
+          PY
+
+      - name: Confirm exactly one Alembic head
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          alembic heads
+          head_count="$(alembic heads | grep -c '(head)')"
+          if [ "$head_count" -ne 1 ]; then
+            echo "Expected exactly one Alembic head, found ${head_count}." >&2
+            exit 1
+          fi
+
+      - name: Upgrade to head from empty
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Confirm current revision matches the single head
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          alembic current
+          head_revision="$(alembic heads | head -n 1 | awk '{print $1}')"
+          current_revision="$(alembic current | grep '(head)' | head -n 1 | awk '{print $1}')"
+          echo "head=${head_revision} current=${current_revision}"
+          if [ -z "$current_revision" ] || [ "$head_revision" != "$current_revision" ]; then
+            echo "Applied revision '${current_revision}' does not match head '${head_revision}'." >&2
+            exit 1
+          fi
+
+      - name: Confirm the migrations created no user
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          # TB-1 TB1-203: a new database gets no demo user - nor any other - from the migrations.
+          python - <<'PY'
+          from sqlalchemy import create_engine, text
+          from app.core.database import CONNECT_ARGS, build_sqlalchemy_url
+
+          engine = create_engine(build_sqlalchemy_url(), connect_args=CONNECT_ARGS)
+          with engine.connect() as connection:
+              count = connection.execute(text("SELECT count(*) FROM app_user")).scalar_one()
+          if count != 0:
+              raise SystemExit(f"Expected no user after upgrading from empty, found {count}.")
+          print("Confirmed: 0 users after upgrading from empty.")
+          PY
+
+  frontend:
+    name: Frontend build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Do not leave the job's token in .git/config. Nothing here pushes, fetches another
+          # repository or calls the API, so a persisted credential would only widen what a
+          # compromised step could reach.
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          # Matches frontend/Dockerfile (node:20-alpine), so CI and the container image agree.
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies from the lockfile
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Production build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Build the hosted-pilot image and check its nginx configuration
+        # TE-5. The image a hosted pilot runs (frontend/Dockerfile.nginx), built with the hosted
+        # pilot's build arguments. Its build fails if a demo sign-in name survives
+        # in the bundle, so this also proves the pilot build carries none. `nginx -t` needs no
+        # backend: the configuration resolves it per request.
+        run: |
+          set -euo pipefail
+          docker build -f frontend/Dockerfile.nginx \
+            --build-arg VITE_HIDE_DEMO_CREDENTIALS=true \
+            --build-arg VITE_PERIMETER_BASIC_AUTH=true \
+            -t pbl-crm-uat-frontend:ci frontend
+          docker run --rm pbl-crm-uat-frontend:ci nginx -t
+
+  contract-fixtures:
+    name: Contract fixture validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Do not leave the job's token in .git/config. Nothing here pushes, fetches another
+          # repository or calls the API, so a persisted credential would only widen what a
+          # compromised step could reach.
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Test the contract fixture validator
+        # The validator's own regression cover. A validator that has only ever been seen to pass
+        # is not evidence of anything, so its failure paths are exercised before it is trusted.
+        run: python -m unittest discover -s scripts/tests -p "test_validate_contract_fixtures.py" -v
+
+      - name: Validate contract fixtures
+        # Standard library only: no install step, and the same command a developer runs locally.
+        run: python scripts/validate_contract_fixtures.py
+
+      - name: Check the user-test packs' tester sheets
+        # The restart of 12 October 2026 (it replaced TE-5's numbered copies). Each tester's sheet must use
+        # valid PAN and GST numbers that clash with no other tester's, name only records another sheet makes,
+        # link only to documents that exist, and match its pack's Feedback Log step for step.
+        run: python -m unittest discover -s scripts/tests -p "test_uat_tester_sheets.py" -v
+
+  security-checks:
+    name: Secret and dependency checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Do not leave the job's token in .git/config. Nothing here pushes, fetches another
+          # repository or calls the API, so a persisted credential would only widen what a
+          # compromised step could reach.
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '20'
+
+      - name: Test the committed-credential check
+        # Proves each rule fires on the condition it describes, that ignored paths stay out of
+        # scope, and that a finding never echoes the matched value.
+        run: python -m unittest discover -s scripts/tests -p "test_check_tracked_secrets.py" -v
+
+      - name: Test the CI Compose cleanup helper
+        # This is the script that force-removes Docker resources; its fail-closed project-name and
+        # GITHUB_ACTIONS gates are the only thing standing between it and a developer's stack. A
+        # validator that has only ever been seen to pass is not evidence of anything, so those
+        # gates -- and the removal-race tolerance -- are exercised here, not just asserted in the
+        # workflow comment. Hermetic: a fake `docker` goes first on PATH, so this never reaches a
+        # real daemon.
+        run: python -m unittest discover -s scripts/tests -p "test_ci_compose_cleanup.py" -v
+
+      - name: Committed-credential check
+        # Standard library only. Reports findings without echoing any matched value, so a
+        # detection never puts the credential into the log.
+        run: python scripts/check_tracked_secrets.py
+
+      - name: Install pip-audit
+        # PyPA's own auditing tool, free and open source, pinned to an exact version so a run is
+        # reproducible. It resolves backend/requirements.txt including transitive packages and
+        # checks them against the Python Packaging Advisory Database.
+        run: pip install pip-audit==2.10.1
+
+      - name: Python dependency audit (full report)
+        # Always prints the complete picture, including findings that are currently deferred, so
+        # the deferral list can never quietly hide the real state from a reviewer.
+        continue-on-error: true
+        run: pip-audit --strict --requirement backend/requirements.txt
+
+      - name: Python dependency audit (gate)
+        # Blocking. Only the specific advisory IDs recorded in the known-findings file are
+        # excluded, each with a written justification and a named remediation owner. Any new or
+        # unlisted advisory fails this job. This is a per-advisory deferral, not a blanket
+        # exclusion, and the deferred items are reported in the TE-2CI acceptance record.
+        run: |
+          set -euo pipefail
+          known_findings_file=".github/dependency-audit-known-findings.txt"
+          ignore_args=()
+          while read -r advisory_id _rest; do
+            case "$advisory_id" in
+              ''|'#'*) continue ;;
+            esac
+            ignore_args+=(--ignore-vuln "$advisory_id")
+          done < "$known_findings_file"
+          echo "Deferred advisories: ${#ignore_args[@]} entries from ${known_findings_file}"
+          pip-audit --strict --requirement backend/requirements.txt "${ignore_args[@]}"
+
+      - name: Frontend dependency audit
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: End-to-end suite dependency audit
+        # The E2E workspace has no runtime dependencies, so --omit=dev would audit nothing.
+        working-directory: e2e
+        run: npm audit --audit-level=high
+
+  compose-e2e:
+    name: Compose build, health and E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    # A CI-only Compose project name, scoped to this job alone. Nothing outside this job sees it,
+    # so local Compose usage and every other job are unaffected.
+    #
+    # It exists so teardown can target this run's containers, network and volumes by exact
+    # `com.docker.compose.project` label instead of relying on Compose's directory-derived default
+    # -- which on a runner is the same `pbl-crm-hiring` a developer uses locally. `github.run_id`
+    # already separates concurrent workflow runs on a reused or self-hosted runner.
+    #
+    # `github.run_attempt` is deliberately NOT included. A per-attempt label would mean a rerun
+    # could pass while the previous attempt's residue sat untouched under a label nothing looks
+    # for again. Sharing one label across attempts makes the "Remove residue from an earlier
+    # attempt" step below able to find and remove it.
+    env:
+      COMPOSE_PROJECT_NAME: pbl-crm-hiring-ci-${{ github.run_id }}
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Do not leave the job's token in .git/config. Nothing here pushes, fetches another
+          # repository or calls the API, so a persisted credential would only widen what a
+          # compromised step could reach.
+          persist-credentials: false
+
+      - name: Create an ephemeral CI environment file
+        # docker-compose.yml reads .env for both the database container's initialization values
+        # and the backend's configuration. The local .env is never read, uploaded or referenced;
+        # this file is fictional, generated in the runner, and destroyed with it. .env is
+        # gitignored, so it cannot be committed by accident from here.
+        run: |
+          set -euo pipefail
+          {
+            echo "APP_ENV=ci"
+            echo "BACKEND_PORT=8000"
+            echo "POSTGRES_DB=pbl_crm_hiring_ci"
+            echo "POSTGRES_USER=pbl_ci"
+            echo "POSTGRES_PASSWORD=ci-not-a-real-secret-placeholder"
+            echo "DATABASE_URL=postgresql+psycopg://pbl_ci:ci-not-a-real-secret-placeholder@db:5432/pbl_crm_hiring_ci"
+            echo "JWT_SECRET=$(openssl rand -hex 32)"
+            echo "JWT_EXPIRES_MINUTES=480"
+            echo "BACKEND_INTERNAL_URL=http://localhost:8000"
+          } > .env
+
+      - name: Validate the Compose configuration
+        run: docker compose config --quiet
+
+      - name: Remove residue from an earlier attempt
+        # On a fresh GitHub-hosted runner this is a no-op: nothing carries the label yet.
+        # It matters on a reused or self-hosted runner, where a rerun of this workflow shares the
+        # project label with the attempt before it. Running the same cleanup up front means
+        # attempt 2 starts from a verified-clean project instead of building on attempt 1's
+        # residue, and fails loudly here if that residue cannot be removed.
+        #
+        # Runs after config validation deliberately: a broken docker-compose.yml must fail the
+        # step whose job is to report that, not this one.
+        run: bash scripts/ci-compose-cleanup.sh "$COMPOSE_PROJECT_NAME"
+
+      - name: Build the Compose images
+        run: docker compose build backend frontend
+
+      - name: Start the stack
+        run: docker compose up -d db backend frontend
+
+      - name: Wait for service health
+        run: |
+          set -euo pipefail
+          wait_for() {
+            local url="$1" name="$2" attempt=1
+            while [ "$attempt" -le 60 ]; do
+              if curl --fail --silent --show-error --max-time 5 "$url" > /dev/null; then
+                echo "${name} is responding."
+                return 0
+              fi
+              sleep 5
+              attempt=$((attempt + 1))
+            done
+            echo "${name} did not become healthy in time." >&2
+            return 1
+          }
+          wait_for "http://localhost:8000/api/health" "Backend health endpoint"
+          wait_for "http://localhost:3000/login" "Frontend"
+          docker compose ps
+
+      - name: Run the Playwright end-to-end suite
+        # The documented entry point, unmodified: it seeds the three TE-1 manifests, runs the
+        # suite with retries left at 0, and always performs manifest and login-audit cleanup in
+        # its own finally block. -SkipServiceStart is correct here because the preceding steps
+        # built the images from this commit and started the stack, so the suite is not testing a
+        # stale frontend bundle. pwsh is preinstalled on the Ubuntu runner image.
+        shell: pwsh
+        run: ./scripts/run-e2e.ps1 -SkipServiceStart
+
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-failure-artifacts
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          # Failure diagnostics only, and only long enough to investigate a failed run. Traces and
+          # screenshots can contain seeded business data, so they are not kept indefinitely.
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Capture Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 400
+
+      - name: Tear down the stack
+        # Always, including after a failure or a cancelled run, so a self-hosted or reused runner
+        # is never left holding containers, networks or volumes.
+        #
+        # `docker compose down -v --remove-orphans` alone did not achieve that after a
+        # cancellation: a cancelled `compose run --rm e2e` container stayed attached long enough
+        # that `down` reported "Network ... Resource is still in use" and exited successfully
+        # anyway. The helper removes every container carrying this run's exact
+        # `com.docker.compose.project` label first, then runs the same `down`, then verifies that
+        # no container, network or volume with that label survives -- failing this step if any
+        # does. It is scoped by label to this CI project only; it never prunes globally, and it
+        # refuses to run against the local development project. Invoked through `bash` so it does
+        # not depend on the checked-out file mode.
+        if: always()
+        run: bash scripts/ci-compose-cleanup.sh "$COMPOSE_PROJECT_NAME"
+
+  required-validation:
+    name: Required validation
+    # This job name is the single stable check for branch protection:
+    #     Required validation
+    # It must stay unique across every workflow in the repository, because protection rules match
+    # on the job name alone.
+    # `if: always()` is essential -- without it a failed dependency would leave this job skipped,
+    # and a skipped required check can be treated as satisfied.
+    if: always()
+    needs:
+      - backend-regression
+      - migrations
+      - frontend
+      - contract-fixtures
+      - security-checks
+      - compose-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Require every validation job to have succeeded
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          echo "$NEEDS_JSON" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          failed="$(echo "$NEEDS_JSON" | jq -r '[to_entries[] | select(.value.result != "success") | .key] | join(", ")')"
+          if [ -n "$failed" ]; then
+            echo "" >&2
+            echo "Required validation FAILED. Jobs not reporting success: ${failed}" >&2
+            echo "A cancelled or skipped job counts as a failure here; every listed job must pass." >&2
+            exit 1
+          fi
+          echo ""
+          echo "Required validation passed: every validation job succeeded."

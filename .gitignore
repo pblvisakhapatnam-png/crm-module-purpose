@@ -1,0 +1,44 @@
+﻿# Environment
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker / local data
+docker-data/
+*.log
+
+# TE-1 smoke-data harness (local run manifests only; never commit generated test data)
+backend/.smoke-runs/
+
+# TE-1 Playwright E2E (generated artifacts and local test data only)
+e2e/node_modules/
+e2e/playwright-report/
+e2e/test-results/
+e2e/.manifest/
+e2e/.auth/
+
+# Slice 6P vendor-demo wrapper (local active-run manifest and generated launch sheet only)
+.vendor-demo/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+e2e/guide/out/

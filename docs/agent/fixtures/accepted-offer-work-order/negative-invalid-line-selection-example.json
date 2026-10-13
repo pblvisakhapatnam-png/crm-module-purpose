@@ -1,0 +1,58 @@
+{
+  "fixture_metadata": {
+    "fixture_name": "negative-invalid-line-selection-example",
+    "fixture_type": "contract_example_not_seed_data",
+    "safe_demo_data": true,
+    "contains_real_customer_data": false,
+    "purpose": "Show invalid selected line IDs for an accepted Commercial Offer handoff."
+  },
+  "invalid_handoff_request": {
+    "commercial_offer_public_id": "DEMO-CO-PUBLIC-NEG-002",
+    "commercial_offer_number": "DEMO-CO-NEG-002",
+    "accepted_offer_reference": "DEMO-ACCEPTED-OFFER-NEG-002",
+    "opportunity_public_id": "DEMO-OPP-NEG-002",
+    "account_public_id": "DEMO-ACCOUNT-NEG-002",
+    "account_display_name": "Demo Account Placeholder Negative",
+    "source_status_code": "ACCEPTED",
+    "selected_line_public_ids": [
+      "DEMO-CO-NEG-LINE-VALID-001",
+      "DEMO-CO-NEG-LINE-NOT-BELONGING-999",
+      "DEMO-CO-NEG-LINE-CANCELLED-002"
+    ],
+    "source_offer_lines": [
+      {
+        "commercial_offer_line_public_id": "DEMO-CO-NEG-LINE-VALID-001",
+        "line_status": "AWARDED",
+        "belongs_to_commercial_offer": true
+      },
+      {
+        "commercial_offer_line_public_id": "DEMO-CO-NEG-LINE-CANCELLED-002",
+        "line_status": "CANCELLED",
+        "belongs_to_commercial_offer": true
+      }
+    ],
+    "correlation_id": "DEMO-CORR-NEG-INVALID-LINE"
+  },
+  "invalid_line_reasons": [
+    {
+      "commercial_offer_line_public_id": "DEMO-CO-NEG-LINE-NOT-BELONGING-999",
+      "reason": "line_does_not_belong_to_commercial_offer"
+    },
+    {
+      "commercial_offer_line_public_id": "DEMO-CO-NEG-LINE-CANCELLED-002",
+      "reason": "line_is_cancelled_or_inactive"
+    }
+  ],
+  "expected_rejection": {
+    "should_reject": true,
+    "suggested_status_code": 422,
+    "error_meaning": "Selected Commercial Offer lines must belong to the accepted offer and must be active or awarded.",
+    "work_order_created": false,
+    "partial_silent_success_allowed": false
+  },
+  "expected_business_event_or_audit_behavior": {
+    "success_business_event_created": false,
+    "reason": "No valid Work Order shell is created.",
+    "technical_or_security_audit_may_record_rejected_attempt": true
+  }
+}

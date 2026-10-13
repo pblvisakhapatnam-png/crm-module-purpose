@@ -1,0 +1,12 @@
+{
+  "name": "pbl-crm-hiring-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TE-1 isolated Playwright regression suite. Not part of the frontend runtime bundle.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  }
+}

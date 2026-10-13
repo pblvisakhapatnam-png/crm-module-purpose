@@ -1,0 +1,7 @@
+# Keep host build output and host-installed dependencies out of the image, so the image always
+# serves what `npm ci` + `npm run build` produced inside the build itself.
+node_modules
+dist
+.dockerignore
+Dockerfile
+Dockerfile.nginx

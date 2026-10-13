@@ -1,0 +1,21 @@
+﻿# Normalize text files while keeping platform-specific scripts sensible.
+* text=auto
+
+*.md text eol=lf
+*.py text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sql text eol=lf
+*.sh text eol=lf
+
+# The Hiring user test's invented Plum report (TE-7): the Fleet Admin uploads this very file, and the
+# practice data's cleanup finds that upload by the SHA-256 of the report as the seed made it - with LF.
+# A CRLF checkout would change the fingerprint and leave the upload behind.
+docs/uat-hiring/*.csv text eol=lf
+
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf

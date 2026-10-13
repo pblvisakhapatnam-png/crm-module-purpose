@@ -1,0 +1,84 @@
+{
+  "fixture_metadata": {
+    "fixture_name": "work-order-shell-output-example",
+    "fixture_type": "contract_example_not_seed_data",
+    "safe_demo_data": true,
+    "contains_real_customer_data": false,
+    "source_fixture": "accepted-commercial-offer-handoff-example.json",
+    "notes": [
+      "Production MVP example uses HANDOFF_RECEIVED.",
+      "Current prototype maps shell creation to HANDOFF_CREATED in docs.",
+      "This shell is not released, posted, executable, assigned, billable or invoiced."
+    ]
+  },
+  "work_order_public_id": "DEMO-WO-PUBLIC-001",
+  "work_order_number": "DEMO-WO-001",
+  "linked_commercial_offer_public_id": "DEMO-CO-PUBLIC-001",
+  "accepted_offer_reference": "DEMO-ACCEPTED-OFFER-REF-001",
+  "linked_opportunity_public_id": "DEMO-OPP-001",
+  "linked_account_public_id": "DEMO-ACCOUNT-001",
+  "account_display_name": "Demo Account Placeholder",
+  "work_order_status": "HANDOFF_RECEIVED",
+  "prototype_status_mapping_note": "Current prototype uses HANDOFF_CREATED for shell creation.",
+  "business_event_reference": {
+    "work_order_event_reference": "DEMO-EVENT-WO-SHELL-001",
+    "work_order_event_name": "WorkOrderShellCreated",
+    "source_offer_event_reference": "DEMO-EVENT-CO-CONVERTED-001",
+    "source_offer_event_name": "CommercialOfferConvertedToWorkOrder"
+  },
+  "correlation_id": "DEMO-CORR-CO-WO-001",
+  "work_order_lines": [
+    {
+      "work_order_line_public_id": "DEMO-WO-LINE-001",
+      "line_sequence": 1,
+      "line_status": "HANDOFF_RECEIVED",
+      "source_commercial_offer_line_public_id": "DEMO-CO-LINE-001",
+      "scope_description": "Demo crane hiring for safe sample site work",
+      "equipment_category": "mobile_crane",
+      "quantity": 1,
+      "billing_uom": "day",
+      "approved_rate_amount": 24500.0,
+      "currency_code": "INR",
+      "line_amount": 245000.0,
+      "site_or_location_details": {
+        "site_reference": "DEMO-SITE-001",
+        "display_text": "DEMO SITE PLACEHOLDER - NOT A REAL ADDRESS"
+      },
+      "gstn": "PLACEHOLDER_NOT_REAL",
+      "billing_party_details": {
+        "billing_party_reference": "DEMO-BILL-TO-001",
+        "display_text": "Demo Billing Party Placeholder"
+      }
+    },
+    {
+      "work_order_line_public_id": "DEMO-WO-LINE-002",
+      "line_sequence": 2,
+      "line_status": "HANDOFF_RECEIVED",
+      "source_commercial_offer_line_public_id": "DEMO-CO-LINE-002",
+      "scope_description": "Demo trailer support for equipment movement",
+      "equipment_category": "trailer",
+      "quantity": 1,
+      "billing_uom": "trip",
+      "approved_rate_amount": 18000.0,
+      "currency_code": "INR",
+      "line_amount": 36000.0,
+      "site_or_location_details": {
+        "site_reference": "DEMO-SITE-001",
+        "display_text": "DEMO SITE PLACEHOLDER - NOT A REAL ADDRESS"
+      },
+      "gstn": "PLACEHOLDER_NOT_REAL",
+      "billing_party_details": {
+        "billing_party_reference": "DEMO-BILL-TO-001",
+        "display_text": "Demo Billing Party Placeholder"
+      }
+    }
+  ],
+  "not_included": [
+    "release_posting_completed",
+    "equipment_assignment_completed",
+    "crew_assignment_completed",
+    "log_sheet_recorded",
+    "billing_calculated",
+    "invoice_created"
+  ]
+}

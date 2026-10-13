@@ -1,0 +1,93 @@
+services:
+  # PostgreSQL is the frozen production database (ADR-028). The SQL Server service this replaced
+  # (TE-2B) and its `mssql-data` volume are gone from this file; a machine that ran the stack before
+  # TE-2B may still hold that volume - see the note at the end of this file.
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Store and report database timestamps in UTC; the UI converts to Asia/Kolkata for display.
+      TZ: "UTC"
+      PGTZ: "UTC"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - .env
+    environment:
+      # Named here so Compose itself refuses a missing value, before the backend would (TB-1 TB1-204
+      # part d). A local stack's .env sets development, which also gives it the demo users.
+      APP_ENV: ${APP_ENV:?APP_ENV is not set - add APP_ENV=development to .env for a local stack}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
+      - ./backend/tooling:/app/tooling
+      # Document Storage Foundation (Slice 9C). A named volume, not a bind mount, so uploaded
+      # files survive an image rebuild and a container recreate exactly like postgres-data does
+      # - this is the backup unit under owner decision 2 (8 September 2026).
+      - document-store:/app/document-store
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # The image builds the Vite application and serves the built output on port 3000. There is
+  # deliberately no source bind mount: it would shadow the image-built dist/ and node_modules with
+  # host copies. For a hot-reloading dev server against host sources, see frontend/README.md.
+  frontend:
+    build:
+      context: ./frontend
+    env_file:
+      - .env
+    environment:
+      # Server-side only. Vite proxies /api to this target; it is never inlined into browser code,
+      # which continues to call relative /api URLs.
+      BACKEND_INTERNAL_URL: "http://backend:8000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  # TE-1 isolated Playwright regression suite. Not part of normal `docker compose up -d`
+  # (guarded by the "e2e" profile) and never bundled into the frontend production image.
+  # Pinned to the official Playwright image so the container's bundled browsers match
+  # the @playwright/test version declared in e2e/package.json exactly.
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.61.1-noble
+    profiles: ["e2e"]
+    working_dir: /e2e
+    volumes:
+      - ./e2e:/e2e
+      - e2e-node-modules:/e2e/node_modules
+    environment:
+      E2E_BASE_URL: "http://frontend:3000"
+      MANIFEST_PATH: "/e2e/.manifest/run.json"
+      RELATED_OFFERS_MANIFEST_PATH: "/e2e/.manifest/related-offers.json"
+      WORK_ORDER_AMENDMENTS_MANIFEST_PATH: "/e2e/.manifest/work-order-amendments.json"
+    depends_on:
+      - frontend
+    command: >
+      bash -c "npm install --no-audit --no-fund && npx playwright test"
+
+volumes:
+  # The old `mssql-data` volume is deliberately NOT declared here, so `docker compose down -v`
+  # cannot delete it on a machine that still holds it from before TE-2B. A new setup never has it.
+  # TE-2B and TE-2C are accepted; the retention rule they recorded is that it is deleted by hand
+  # only on the project owner's instruction (TE_2B_POSTGRESQL_MIGRATION.md, "Retained SQL Server
+  # volume"). Reconciled 8 October 2026 (TB-1 TB1-903).
+  postgres-data:
+  e2e-node-modules:
+  document-store:
