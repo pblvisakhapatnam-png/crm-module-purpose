@@ -122,6 +122,21 @@ def _clean_optional(value: str | None) -> str | None:
     return stripped or None
 
 
+_OPPORTUNITY_NAME_MAX_LENGTH = 255
+_OPPORTUNITY_NAME_SUFFIX = " Opportunity"
+
+
+def _default_opportunity_name(company_name: str) -> str:
+    """Build the auto-generated Opportunity name, kept within the column's length.
+
+    A company name near the Lead's own 255-character limit would otherwise push
+    "{company_name} Opportunity" past the Opportunity's 255-character limit and fail
+    at the database, so the company-name portion is trimmed to make room for the suffix.
+    """
+    max_company_length = _OPPORTUNITY_NAME_MAX_LENGTH - len(_OPPORTUNITY_NAME_SUFFIX)
+    return f"{company_name[:max_company_length]}{_OPPORTUNITY_NAME_SUFFIX}"
+
+
 def _normalize_source(value: str | None) -> str:
     return (value or "").strip().lower()
 
@@ -510,7 +525,7 @@ def convert_lead(
     _validate_active_status(db, LEAD_STATUS_CONVERTED)
 
     account_name = _clean_optional(payload.account_name) or lead.company_name
-    opportunity_name = _clean_optional(payload.opportunity_name) or f"{lead.company_name} Opportunity"
+    opportunity_name = _clean_optional(payload.opportunity_name) or _default_opportunity_name(lead.company_name)
     conversion_notes = _default_conversion_notes(lead, payload.conversion_notes)
     owner_user_public_id = current_user_public_id or (str(lead.assigned_to_user_public_id) if lead.assigned_to_user_public_id else None)
 

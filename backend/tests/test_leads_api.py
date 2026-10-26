@@ -626,6 +626,42 @@ def test_sales_user_can_convert_qualified_lead_to_account_and_opportunity() -> N
         )
 
 
+def test_converting_a_lead_with_a_very_long_company_name_does_not_error() -> None:
+    lead_public_ids: list[str] = []
+    account_public_ids: list[str] = []
+    opportunity_public_ids: list[str] = []
+
+    long_company_name = "A" * 255
+
+    try:
+        lead = create_test_lead(long_company_name)
+        lead_public_id = str(lead["public_id"])
+        lead_public_ids.append(lead_public_id)
+        qualify_test_lead(lead_public_id)
+
+        convert_response = client.post(
+            f"/api/leads/{lead_public_id}/convert",
+            headers=auth_headers("sales1"),
+            json={},
+        )
+
+        assert convert_response.status_code == 201
+        body = convert_response.json()
+        account_public_ids.append(body["account"]["public_id"])
+        opportunity_public_ids.append(body["opportunity"]["public_id"])
+
+        opportunity_name = body["opportunity"]["opportunity_name"]
+        assert len(opportunity_name) <= 255
+        assert opportunity_name.endswith(" Opportunity")
+        assert body["account"]["account_name"] == long_company_name
+    finally:
+        cleanup_test_conversion_records(
+            lead_public_ids=lead_public_ids,
+            account_public_ids=account_public_ids,
+            opportunity_public_ids=opportunity_public_ids,
+        )
+
+
 def test_a_converted_lead_can_no_longer_be_edited_or_decided() -> None:
     """TB-1 TB1-302 (4 October 2026): CONVERTED is final. Neither the Lead details update nor a qualification decision
     may change a converted Lead - not its status, not its details - and a refusal records nothing."""
